@@ -3,7 +3,7 @@ package edu.yu.dbimpl.file;
 /** Specifies the public API for the Page implementation by requiring all
  * Page implementations to extend this base class.
  *
- * Students MAY NOT modify this class in any way, they must suppport EXACTLY
+ * Students MAY NOT modify this class in any way, they must support EXACTLY
  * the constructor signatures specified in the base class (and NO OTHER
  * signatures).
  *
