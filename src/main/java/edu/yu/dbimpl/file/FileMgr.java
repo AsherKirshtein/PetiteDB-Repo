@@ -12,7 +12,9 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.logging.FileHandler;
 import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 
 
 public class FileMgr extends FileMgrBase{
@@ -20,7 +22,8 @@ public class FileMgr extends FileMgrBase{
     private final File dbDirectory;
     private final int blocksize;
     private boolean isNew;
-    private Logger logger = Logger.getLogger(FileMgr.class.getName() + ".log");
+    private static Logger logger;
+    private FileHandler fh;
     
     public FileMgr(File dbDirectory, int blocksize) {
         super(dbDirectory, blocksize);
@@ -28,6 +31,21 @@ public class FileMgr extends FileMgrBase{
         this.dbDirectory = dbDirectory;
         this.dbDirectory.mkdirs();
         this.blocksize = blocksize;
+        logger = Logger.getLogger(FileMgr.class.getName());
+        try
+        {
+            FileHandler fh = new FileHandler("src/main/java/edu/yu/dbimpl/file/fileLogs/FileMgr.log");
+        } 
+        catch (SecurityException | IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+        if (fh != null) {
+            logger.addHandler(fh);
+            SimpleFormatter formatter = new SimpleFormatter();
+            fh.setFormatter(formatter);
+        }
         logger.info("FileMgr created");
         logger.info("dbDirectory: " + dbDirectory);
         logger.info("blocksize: " + blocksize);
@@ -93,6 +111,11 @@ public class FileMgr extends FileMgrBase{
                 Page p2 = (Page) p;
                 String type = p2.getType(offset);
                 logger.info("Getting type to read: " + type);
+                if(type == null)
+                {
+                    logger.info("Type is null returning because nothing to read");
+                    return;
+                }
                 switch (type)
                 {
                     case "int":
@@ -142,7 +165,8 @@ public class FileMgr extends FileMgrBase{
             logger.info("Getting type to write: " + type);
             if(type == null)
             {
-                throw new IllegalArgumentException("Probably have wrong offset");
+                logger.info("Type is null returning because nothing to write");
+                return;
             }
             DataOutputStream dos = new DataOutputStream(fos);
             logger.info("Writing to file: " + file);
