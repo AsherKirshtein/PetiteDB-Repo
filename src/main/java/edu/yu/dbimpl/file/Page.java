@@ -29,12 +29,16 @@ public class Page extends PageBase{
         this.bytes = new byte[blocksize];
         this.buffer = ByteBuffer.wrap(bytes);
         this.offsets = new HashMap<>();
-        logger.info("Page created with blocksize");
+        logger.info("Page created with blocksize " + blocksize);
       }
 
       public String getType(int offset) //needed to add this method to get information into the FileMgr without changing 
       {
-          return this.offsets.get(offset);
+        if(this.offsets.get(offset) == null)
+        {
+            return "null";
+        }
+        return this.offsets.get(offset);
       }
 
     @Override
@@ -156,7 +160,14 @@ public class Page extends PageBase{
             this.buffer.putInt(offset, b.length);
             for(int i = 0 ; i < b.length; i++)
             {
-                this.bytes[offset + 4 + i] = b[i];
+                try
+                {
+                    this.bytes[offset + 4 + i] = b[i];
+                }
+                catch(ArrayIndexOutOfBoundsException e)
+                {
+                   break;
+                }
             }
             this.offsets.put(offset, "byte[]");
         }

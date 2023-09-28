@@ -9,6 +9,8 @@
 /Users/asherkirshtein/Desktop/Kirshtein_Asher_800610242/DatabaseImplementation/assignments/PetiteDB/src/main/java/edu/yu/dbimpl/query/Term.java
 /Users/asherkirshtein/Desktop/Kirshtein_Asher_800610242/DatabaseImplementation/assignments/PetiteDB/src/main/java/edu/yu/dbimpl/parse/BadSyntaxException.java
 /Users/asherkirshtein/Desktop/Kirshtein_Asher_800610242/DatabaseImplementation/assignments/PetiteDB/src/main/java/edu/yu/dbimpl/tx/recovery/LogRecord.java
+/Users/asherkirshtein/Desktop/Kirshtein_Asher_800610242/DatabaseImplementation/assignments/PetiteDB/src/main/java/edu/yu/dbimpl/log/LogMgr.java
+/Users/asherkirshtein/Desktop/Kirshtein_Asher_800610242/DatabaseImplementation/assignments/PetiteDB/src/main/java/edu/yu/dbimpl/log/LogIterator.java
 /Users/asherkirshtein/Desktop/Kirshtein_Asher_800610242/DatabaseImplementation/assignments/PetiteDB/src/main/java/edu/yu/dbimpl/buffer/BufferAbortException.java
 /Users/asherkirshtein/Desktop/Kirshtein_Asher_800610242/DatabaseImplementation/assignments/PetiteDB/src/main/java/edu/yu/dbimpl/metadata/TableMgrBase.java
 /Users/asherkirshtein/Desktop/Kirshtein_Asher_800610242/DatabaseImplementation/assignments/PetiteDB/src/main/java/edu/yu/dbimpl/buffer/BufferBase.java

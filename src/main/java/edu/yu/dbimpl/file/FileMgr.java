@@ -134,7 +134,7 @@ public class FileMgr extends FileMgrBase{
                         p.setString(offset, p2.getString(offset));
                         break;
                     default:
-                        throw new IllegalArgumentException("Invalid type");    
+                        break;
                 }
             }
             catch(FileNotFoundException e)
@@ -151,6 +151,8 @@ public class FileMgr extends FileMgrBase{
     @Override
     public void write(BlockIdBase blk, PageBase p) 
     {
+        synchronized(this)
+        {
         logger.info("write called with BlockIdBase: " + blk + " and PageBase: " + p);
         File file = new File(this.dbDirectory, blk.fileName());
         if(file.length() < (blk.number() + 1) * this.blocksize)
@@ -200,6 +202,7 @@ public class FileMgr extends FileMgrBase{
             throw new IllegalArgumentException("IOException");
         }
         logger.info("Finished write");
+        }
     }
 
     @Override
