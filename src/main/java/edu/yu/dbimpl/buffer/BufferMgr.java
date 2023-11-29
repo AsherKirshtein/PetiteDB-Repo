@@ -11,14 +11,14 @@ import edu.yu.dbimpl.file.*;
 public class BufferMgr extends BufferMgrBase 
 {
   final int maxWaitTime;
-  LinkedBlockingQueue<Buffer> bPool;
-  LinkedBlockingQueue<Buffer> pBuffers;
+  LinkedBlockingQueue<Buffer> availableBuffers;
+  LinkedBlockingQueue<Buffer> TotalBuffers;
   
   FileMgrBase fileMgr;
   LogMgrBase logMgr;
-  int nBuffers;
+  public int nBuffers;
   
-  HashMap<Integer, Buffer> pBuffersMap;
+  HashMap<Integer, Buffer> TotalBuffersMap;
 
   public BufferMgr(FileMgrBase fileMgr, LogMgrBase logMgr, int nBuffers, int maxWaitTime) 
   {
@@ -32,19 +32,25 @@ public class BufferMgr extends BufferMgrBase
     this.nBuffers = nBuffers;
     this.maxWaitTime = maxWaitTime;
 
-    bPool = new LinkedBlockingQueue<Buffer>(nBuffers);
-    pBuffers = new LinkedBlockingQueue<Buffer>(nBuffers);
-    pBuffersMap = new HashMap<Integer, Buffer>(nBuffers);
+    availableBuffers = new LinkedBlockingQueue<Buffer>(nBuffers);
+    TotalBuffers = new LinkedBlockingQueue<Buffer>(nBuffers);
+    TotalBuffersMap = new HashMap<Integer, Buffer>(nBuffers);
 
     for (int i = 0; i < nBuffers; i++) 
     {
-      bPool.add(new Buffer(fileMgr, logMgr));
+      Buffer buff = new Buffer(fileMgr, logMgr);
+      buff.modifyingTx = i;
+      availableBuffers.add(buff);
+      TotalBuffers.add(buff);
+      TotalBuffersMap.put(i, buff);
+      //System.out.println(buff.modifyingTx() + " has been added to the pool");
+
     }
   }
 
   public void flushAll(int txnum) 
   {
-    Iterator<Buffer> iterator = pBuffers.iterator();
+    Iterator<Buffer> iterator = TotalBuffers.iterator();
     while(iterator.hasNext()) 
     {
       Buffer buffer = iterator.next();
@@ -53,10 +59,10 @@ public class BufferMgr extends BufferMgrBase
           buffer.flush();
       }
     }
-      Iterator<Buffer> bPoolIterator = bPool.iterator();
-      while (bPoolIterator.hasNext()) 
+      Iterator<Buffer> availableBuffersIterator = availableBuffers.iterator();
+      while (availableBuffersIterator.hasNext()) 
       {
-        Buffer buffer = bPoolIterator.next();
+        Buffer buffer = availableBuffersIterator.next();
         if(buffer.isModifiedBy(txnum)) 
         {
           buffer.flush();
@@ -66,7 +72,7 @@ public class BufferMgr extends BufferMgrBase
 
   public int available() 
   {
-    return bPool.size();
+    return availableBuffers.size();
   }
 
   public synchronized BufferBase pin(BlockIdBase blk) 
@@ -76,47 +82,47 @@ public class BufferMgr extends BufferMgrBase
       throw new IllegalArgumentException("blk cannot be null");
     }
     Buffer buffer = null;
-    if (!pBuffersMap.containsKey(blk.number())) 
-    {
-       return null;
+    if (!TotalBuffersMap.containsKey(blk.number())) 
+    { 
+      //System.out.println("We don't see that buffer sorry :( " + blk.number());
+      return null;
     }
     else
     {
-      Iterator<Buffer> iterator = pBuffers.iterator();
+      Iterator<Buffer> iterator = TotalBuffers.iterator();
       while (iterator.hasNext()) 
       {
         Buffer b = iterator.next();
+        //System.out.println(" Trying to pin " + b);
         if (blk.equals(b.block())) 
         {
           buffer = b;
+          //System.out.println("Buffer " + b + " has been pinned");
           buffer.pin();
           return buffer;
         }
       }
     }
 
-    Iterator<Buffer> iterator = bPool.iterator();
+    Iterator<Buffer> iterator = availableBuffers.iterator();
     while (iterator.hasNext()) 
     {
       Buffer b = iterator.next();
-      if(!b.block().equals(blk)) 
-      {
-        continue;
-      }
-      else
+      if(b.block().equals(blk)) 
       {
         buffer = b;
+        //System.out.println(blk.number() + " Just pinned ");
         buffer.pin();
-        pBuffersMap.put(blk.number(), buffer);
-        bPool.remove(b);
-        pBuffers.add(buffer);
+        TotalBuffersMap.put(blk.number(), buffer);
+        availableBuffers.remove(b);
+        TotalBuffers.add(buffer);
         return buffer;
       }
     }
     
     try 
     {
-      buffer = bPool.poll(maxWaitTime, TimeUnit.MILLISECONDS);
+      buffer = availableBuffers.poll(maxWaitTime, TimeUnit.MILLISECONDS);
       if (buffer == null) 
       {
         throw new BufferAbortException("Timed out waiting for a buffer to become available.");
@@ -127,10 +133,10 @@ public class BufferMgr extends BufferMgrBase
         throw new BufferAbortException("Interrupted while waiting for a buffer to become available.");
     }
 
-    buffer.assignToBlock(blk);
+    //buffer.assignToBlock(blk);
     buffer.pin();
-    pBuffersMap.put(blk.number(), buffer);
-    pBuffers.add(buffer);
+    TotalBuffersMap.put(blk.number(), buffer);
+    TotalBuffers.remove(buffer);
     return buffer;
   }
 
@@ -143,14 +149,15 @@ public class BufferMgr extends BufferMgrBase
     Buffer buf = (Buffer) buffer;
     if(!buf.isPinned()) 
     {
-       return;
+      //System.out.println("That buffer ain't pinned"); 
+      return;
     }
-    buf.unpin();
+    
     if (buf.isPinned()) 
     {
-      pBuffers.remove(buf);
-      pBuffersMap.remove(buf.block().number());
-      bPool.add(buf);
+      TotalBuffersMap.remove(buf.block().number());
+      availableBuffers.add(buf);
+      buf.unpin();
     }
   }
 }

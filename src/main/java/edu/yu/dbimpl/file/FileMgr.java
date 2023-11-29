@@ -1,9 +1,6 @@
 package edu.yu.dbimpl.file;
 
-import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
@@ -12,9 +9,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.logging.FileHandler;
 import java.util.logging.Logger;
-import java.util.logging.SimpleFormatter;
 
 
 public class FileMgr extends FileMgrBase{
@@ -22,40 +17,23 @@ public class FileMgr extends FileMgrBase{
     private final File dbDirectory;
     private final int blocksize;
     private boolean isNew;
-    private static Logger logger;
-    private FileHandler fh;
+    private int offset;
+
+    //Logger logger = Logger.getLogger(FileMgr.class.getName());
     
-    public FileMgr(File dbDirectory, int blocksize) {
+    public FileMgr(File dbDirectory, int blocksize) 
+    {
         super(dbDirectory, blocksize);
         this.isNew = !dbDirectory.exists();
         this.dbDirectory = dbDirectory;
         this.dbDirectory.mkdirs();
         this.blocksize = blocksize;
-        logger = Logger.getLogger(FileMgr.class.getName());
-        try
-        {
-            FileHandler fh = new FileHandler("src/main/java/edu/yu/dbimpl/file/fileLogs/FileMgr.log");
-        } 
-        catch (SecurityException | IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-
-        if (fh != null) {
-            logger.addHandler(fh);
-            SimpleFormatter formatter = new SimpleFormatter();
-            fh.setFormatter(formatter);
-        }
-        logger.info("FileMgr created");
-        logger.info("dbDirectory: " + dbDirectory);
-        logger.info("blocksize: " + blocksize);
-        logger.info("isNew: " + isNew);
-        logger.info("dbDirectory exists: " + dbDirectory.exists());
-        logger.info("dbDirectory is deleting temp files at super sonic speed"); 
+        this.offset = 0;
         removeTempFiles();  
     }
 
-    public void removeTempFiles() {
+    public void removeTempFiles()
+    {
         File[] files = dbDirectory.listFiles();
         if (files == null)
         {
@@ -85,163 +63,40 @@ public class FileMgr extends FileMgrBase{
             }
         }
         executor.shutdown();
+        //logger.info("temp files removed");
     }
 
     @Override
-    public void read(BlockIdBase blk, PageBase p)
+    public void read(BlockIdBase blk, PageBase p) {
+    synchronized (this) {
+        // Calculate the position from which the block should be read in the file
+        long position = blk.number() * blockSize();
+        // Construct the full path to the file based on the block's filename
+        File file = new File(dbDirectory, blk.fileName());
+
+        if (!file.exists()) {
+            throw new IllegalArgumentException("Block does not exist: " + blk.fileName());
+        }
+        try (RandomAccessFile randomAccessFile = new RandomAccessFile(file, "r")) {
+            randomAccessFile.seek(position);
+            byte[] data = new byte[blockSize()];
+            int bytesRead = randomAccessFile.read(data);
+            if (bytesRead == -1) {
+                throw new IOException("End of file reached while trying to read block: " + blk.fileName());
+            }
+            ((Page) p).setAllBytes(data);
+
+            } 
+            catch (IOException e) 
+            {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    @Override
+    public int length(String filename)
     {
-        synchronized(this)
-        {
-            logger.info("read called with BlockIdBase: " + blk + " and PageBase: " + p);
-            File file = new File(this.dbDirectory, blk.fileName());
-            if(file.length() < (blk.number() + 1) * this.blocksize)
-            {
-                throw new IllegalArgumentException("Block does not exist");
-            }
-            if(p.getBytes(0).length > this.blocksize - 4)
-            {
-                throw new IllegalArgumentException("Page is too large to fit into a block");
-            }
-            try(RandomAccessFile raf = new RandomAccessFile(file, "r"))
-            {
-                raf.seek(blk.number() * this.blocksize);
-                byte[] bytes = new byte[this.blocksize];
-                raf.read(bytes);
-                int offset = blk.number() * this.blocksize;
-                Page p2 = (Page) p;
-                String type = p2.getType(offset);
-                logger.info("Getting type to read: " + type);
-                if(type == null)
-                {
-                    logger.info("Type is null returning because nothing to read");
-                    return;
-                }
-                switch (type)
-                {
-                    case "int":
-                        p.setInt(offset, p2.getInt(offset));
-                        break;
-                    case "double":
-                        p.setDouble(offset, p2.getDouble(offset));
-                        break;
-                    case "boolean":
-                        p.setBoolean(offset, p2.getBoolean(offset));
-                        break;
-                    case "byte[]":
-                        p.setBytes(offset, p2.getBytes(offset));
-                        break;
-                    case "String":
-                        p.setString(offset, p2.getString(offset));
-                        break;
-                    default:
-                        break;
-                }
-            }
-            catch(FileNotFoundException e)
-            {
-                throw new IllegalArgumentException("File does not exist");
-            }
-            catch(IOException e)
-            {
-                throw new IllegalArgumentException("IOException");
-            }
-        }
-    }
-
-    @Override
-    public void write(BlockIdBase blk, PageBase p) 
-    {
-        synchronized(this)
-        {
-        logger.info("write called with BlockIdBase: " + blk + " and PageBase: " + p);
-        File file = new File(this.dbDirectory, blk.fileName());
-        if(file.length() < (blk.number() + 1) * this.blocksize)
-        {
-            throw new IllegalArgumentException("Block does not exist");
-        }
-        try(FileOutputStream fos = new FileOutputStream(file, true))
-        {
-            int offset = blk.number() * this.blocksize;
-            Page p2 = (Page) p;
-            String type = p2.getType(offset);
-            logger.info("Getting type to write: " + type);
-            if(type == null)
-            {
-                logger.info("Type is null returning because nothing to write");
-                return;
-            }
-            DataOutputStream dos = new DataOutputStream(fos);
-            logger.info("Writing to file: " + file);
-            switch(type)
-            {
-                case "int":
-                    fos.write(p2.getInt(offset));
-                    break;
-                case "double":
-                    dos.writeDouble(p2.getDouble(offset));
-                    break;
-                case "boolean":
-                    dos.writeBoolean(p2.getBoolean(offset));
-                    break;
-                case "byte[]":
-                    fos.write(p2.getBytes(offset));
-                    break;
-                case "String":
-                    fos.write(p2.getString(offset).getBytes());
-                    break;
-                default:
-                    throw new IllegalArgumentException("Invalid type");
-            }
-        }
-        catch(FileNotFoundException e)
-        {
-            throw new IllegalArgumentException("File does not exist");
-        }
-        catch(IOException e)
-        {
-            throw new IllegalArgumentException("IOException");
-        }
-        logger.info("Finished write");
-        }
-    }
-
-    @Override
-    public BlockIdBase append(String filename) 
-    {
-        synchronized(this)
-        {
-            logger.info("append called with filename: " + filename);
-            File file = new File(this.dbDirectory, filename);
-            if(!file.exists())
-            {
-                try
-                {
-                    file.createNewFile();
-                }
-                catch(IOException e)
-                {
-                    throw new IllegalArgumentException("IOException");
-                }
-            }
-            try(FileOutputStream fos = new FileOutputStream(file, true))
-            {
-                fos.write(new byte[this.blocksize]);
-                logger.info("Writing to file: " + file);
-            }
-            catch(FileNotFoundException e)
-            {
-                throw new IllegalArgumentException("File does not exist");
-            }
-            catch(IOException e)
-            {
-                throw new IllegalArgumentException("IOException");
-            }
-        }
-        return new BlockId(filename, this.length(filename) - 1);
-    }
-
-    @Override
-    public int length(String filename) {
         File file = new File(this.dbDirectory, filename);
         if(!file.exists())
         {
@@ -259,5 +114,52 @@ public class FileMgr extends FileMgrBase{
     public int blockSize() {
         return this.blocksize;
     }
-    
+
+    @Override
+    public void write(BlockIdBase blk, PageBase p)
+    {
+        synchronized(this)
+        {
+            // Calculate the position where the block should be written in the file
+            long position = blk.number() * blockSize();
+            // Construct the full path to the file based on the block's filename
+            File file = new File(dbDirectory, blk.fileName());
+            //logger.info(p.toString());
+            //logger.info("Writing block: " + blk.fileName() + " to file: " + file.getName() + " at position: " + position);
+            try (RandomAccessFile randomAccessFile = new RandomAccessFile(file, "rws")) 
+            {
+                randomAccessFile.seek(position);
+                randomAccessFile.write(((Page)p).b);
+                randomAccessFile.getFD().sync();
+                randomAccessFile.close();
+            } 
+            catch (IOException e) 
+            {
+                throw new RuntimeException("Error writing block to file: " + e.getMessage(), e);
+            };
+        }
+    }
+
+    @Override
+    public BlockIdBase append(String filename) 
+    {
+            //logger.info("Appending block to file: " + filename);
+            if (filename == null || filename.isEmpty()) 
+            {
+                throw new IllegalArgumentException("Invalid filename");
+            }
+            File file = new File(dbDirectory, filename);
+            try (RandomAccessFile randomAccessFile = new RandomAccessFile(file, "rws")) 
+            {
+                long position = randomAccessFile.length();
+                byte[] newBlock = new byte[blockSize()];
+                randomAccessFile.seek(position);
+                randomAccessFile.write(newBlock);
+                return new BlockId(filename, blockSize());
+            } 
+            catch (IOException e) 
+            {
+                throw new RuntimeException("Error appending block to file: " + e.getMessage(), e);
+            }
+    }
 }

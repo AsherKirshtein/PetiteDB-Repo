@@ -3,7 +3,7 @@ package edu.yu.dbimpl.log;
 /** Specifies the public API for the LogMgr implementation by requiring all
  * LogMgr implementations to extend this base class.
  *
- * Students MAY NOT modify this class in any way, they must suppport EXACTLY
+ * Students MAY NOT modify this class in any way, they must support EXACTLY
  * the constructor signatures specified in the base class (and NO OTHER
  * signatures).
  *

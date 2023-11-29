@@ -25,5 +25,11 @@ public class BlockId extends BlockIdBase {
     public int number() {
         return this.blknum;
     }
+
+    @Override
+    public String toString() {
+        // TODO Auto-generated method stub
+        return this.filename + this.blknum ;
+    }
     
 }

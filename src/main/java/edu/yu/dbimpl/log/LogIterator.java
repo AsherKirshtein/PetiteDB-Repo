@@ -1,88 +1,90 @@
 package edu.yu.dbimpl.log;
 
-import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 
-import edu.yu.dbimpl.file.BlockId;
 import edu.yu.dbimpl.file.BlockIdBase;
 import edu.yu.dbimpl.file.FileMgrBase;
 import edu.yu.dbimpl.file.Page;
 
 public class LogIterator extends LogIteratorBase {
 
-    FileMgrBase fm;
-    BlockIdBase blk;
-    LogMgr logMgr;
-    int offset;
-    Page page;
+    private FileMgrBase fm;
+    private BlockIdBase blk;
+    private Map<Integer, Integer> lsnToOffset;
+    private int lsn;
+    private Page page;
+    private int offset;
+    //private Logger logger = Logger.getLogger(LogIterator.class.getName());
 
     public LogIterator(FileMgrBase fm, BlockIdBase blk)
     {
         super(fm, blk);
         this.fm = fm;
         this.blk = blk;
-        this.logMgr = new LogMgr(fm, blk.fileName());
         this.page = new Page(fm.blockSize());
+        this.lsnToOffset = new HashMap<>(); 
+        this.lsn = 0;
+        this.offset = fm.blockSize(); 
+        //logger.info("LogIterator created");
     }
 
     @Override
     public boolean hasNext()
     {
-        if(this.offset == fm.blockSize())
-        {
-            if(this.blk.number() <= 0)
-            {
-                return false;
-            }
-        }
-        return true;
-
+        return !this.lsnToOffset.isEmpty();
     }
 
     @Override
     public byte[] next() 
     {
-        synchronized(this)
+        if(!hasNext() || this.lsn == 0)
         {
-            fm.read(blk, this.page);
-            //If there are no more log records in the current block, then move to the previous block and return the last log record from that block.
-            if (this.offset == fm.blockSize() && this.blk.number() > 0)
-            {
-                this.blk = new BlockId(blk.fileName(), blk.number() - 1);
-                this.offset = 0;
-                fm.read(blk, this.page);
-                return this.page.getBytes(offset);
-            } 
-            else 
-            {
-                // Move to the next log record within the same block
-                String type = this.page.getType(offset);
-                System.out.println("type: " + type);
-                switch(type)
-                {
-                    case "int":
-                        this.offset += Integer.BYTES;
-                        break;
-                    case "double":
-                        this.offset += Double.BYTES;
-                        break;
-                    case "boolean":
-                        this.offset += Integer.BYTES;
-                        break;
-                    case "byte[]":
-                        this.offset += this.page.getInt(offset);
-                        break;
-                    case "String":
-                        this.offset += this.page.getInt(offset);
-                        break;
-                    case "null":
-                        return new byte[fm.blockSize()];
-                }
-                fm.read(blk, this.page);
-                System.out.println("offset: " + offset);
-                System.out.println("block size: " + fm.blockSize());
-                return this.page.getBytes(offset);
-            }
-    }
+            return null;
         }
-    
+        if(this.lsnToOffset.get(this.lsn) == null)
+        {
+            return null;
+        }
+        int offset = this.lsnToOffset.get(this.lsn);
+        this.lsnToOffset.remove(this.lsn);
+        this.lsn--;
+        this.fm.read(this.blk, this.page);
+        return this.page.getBytes(offset);
+    }
+
+    public void addOffsetandLSN(int offset, int lsn)
+    {
+        this.lsnToOffset.put(lsn, offset);
+        this.lsn++;
+    }
+
+    public void removeOffsetandLSN(int lsn)
+    {
+        this.lsnToOffset.remove(lsn);
+    }
+
+    public int getOffset(int lsn)
+    {
+        return this.lsnToOffset.get(lsn);
+    }
+    @Override
+    public String toString() {
+        return "LogIterator [blk=" + blk + ", fm=" + fm + ", lsn=" + lsn + ", lsnToOffset=" + lsnToOffset + ", page="
+                + page + "]";
+    }
+
+    public boolean containsLSN(int i) {
+        return this.lsnToOffset.containsKey(i);
+    }
+
+    public int getLSN() {
+        return this.lsn;
+    }
+
+    public void setLSN(int lsn2)
+    {
+        this.lsn = lsn2;
+    }
+
 }

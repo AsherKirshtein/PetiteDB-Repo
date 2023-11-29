@@ -1,18 +1,23 @@
 package edu.yu.dbimpl.buffer;
 
+import edu.yu.dbimpl.log.LogMgr;
 import edu.yu.dbimpl.log.LogMgrBase;
+
+import java.util.logging.Logger;
+
 import edu.yu.dbimpl.file.*;
 
 public class Buffer extends BufferBase 
 {  
   FileMgrBase fileMgr;
-  LogMgrBase logMgr;
+  LogMgr logMgr;
   int lsn;
   int pins;
   int modifyingTx;
   BlockIdBase blockId;
-  Page page;
+  public Page page;
   boolean dirty;
+  Logger logger = Logger.getLogger(Buffer.class.getName());
 
   public Buffer(FileMgrBase fileMgr, LogMgrBase logMgr) 
   {
@@ -24,12 +29,14 @@ public class Buffer extends BufferBase
     }
 
     this.fileMgr = fileMgr;
-    this.logMgr = logMgr;
+    this.logMgr = (LogMgr) logMgr;
     this.dirty = false;
     this.modifyingTx = 0;
     this.pins = 0;
     this.lsn = -1;
+    this.blockId = new BlockId("BufferBlock", this.modifyingTx);
     this.page = new Page(fileMgr.blockSize());
+    //logger.info("Buffer created");
   }
 
 
@@ -74,10 +81,12 @@ public class Buffer extends BufferBase
       dirty = false;
       modifyingTx = -1;
     }
+    logger.info("Buffer flushed");
   }
 
   public synchronized void pin() 
   {
+    //logger.info(this.modifyingTx + " Has been pinned");
     pins++;
   }
 
@@ -96,6 +105,7 @@ public class Buffer extends BufferBase
   public synchronized void unpin() 
   {
     pins--;
+    //logger.info("Buffer unpinned");
   }
 
   public void assignToBlock(BlockIdBase b) 
@@ -104,10 +114,17 @@ public class Buffer extends BufferBase
     {
       if(!blockId.equals(b)) 
       {
+        logger.info("We needed to flush on " + b.fileName());
         flush();
       }
     }
     this.blockId = b;
     this.fileMgr.read(blockId, page);
+    logger.info("Buffer assigned to block: " + b.fileName());
+  }
+
+  public int getLSN()
+  {
+    return this.logMgr.getLSN();
   }
 }
