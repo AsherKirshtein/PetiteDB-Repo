@@ -13,7 +13,7 @@ public class Buffer extends BufferBase
   LogMgr logMgr;
   int lsn;
   int pins;
-  int modifyingTx;
+  public int modifyingTx;
   BlockIdBase blockId;
   public Page page;
   boolean dirty;
@@ -36,7 +36,6 @@ public class Buffer extends BufferBase
     this.lsn = -1;
     this.blockId = new BlockId("BufferBlock", this.modifyingTx);
     this.page = new Page(fileMgr.blockSize());
-    //logger.info("Buffer created");
   }
 
 
@@ -65,10 +64,6 @@ public class Buffer extends BufferBase
 
   public boolean isPinned()
   {
-    if(pins <= 0) 
-    {
-      return false;
-    }
     return pins > 0;
   }
 
@@ -81,12 +76,12 @@ public class Buffer extends BufferBase
       dirty = false;
       modifyingTx = -1;
     }
-    logger.info("Buffer flushed");
+    //logger.info("Buffer flushed");
   }
 
   public synchronized void pin() 
   {
-    //logger.info(this.modifyingTx + " Has been pinned");
+    logger.info(this.modifyingTx + " Has been pinned");
     pins++;
   }
 
@@ -105,7 +100,7 @@ public class Buffer extends BufferBase
   public synchronized void unpin() 
   {
     pins--;
-    //logger.info("Buffer unpinned");
+    logger.info("Buffer unpinned " + this.modifyingTx);
   }
 
   public void assignToBlock(BlockIdBase b) 

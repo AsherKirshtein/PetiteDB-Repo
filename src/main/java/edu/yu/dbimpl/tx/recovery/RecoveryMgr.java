@@ -29,7 +29,7 @@ public class RecoveryMgr extends RecoveryMgrBase {
         this.logMgr = logMgr;
         this.bufferMgr = bufferMgr;
         lsn = 0;
-        logger.info("Recovery Mgr created");
+        //logger.info("Recovery Mgr created");
         this.records = new Stack<>();
     }
 
@@ -47,9 +47,12 @@ public class RecoveryMgr extends RecoveryMgrBase {
     @Override
     public void rollback() 
     {
-       
+       if(this.records.empty())
+       {
+            return;
+       }
         LogRecordImpl record = (LogRecordImpl) this.records.pop();
-        logger.info("Committing RollBack on " + record);
+        //logger.info("Committing RollBack on " + record);
         switch (record.type) {
             case SET_BOOLEAN: 
                 record.page.setBoolean(record.offset, record.oldBoolean);

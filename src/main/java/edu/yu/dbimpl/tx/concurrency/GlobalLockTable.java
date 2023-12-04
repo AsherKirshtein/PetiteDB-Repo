@@ -20,7 +20,7 @@ class GlobalLockTable{
     public synchronized void acquireLock(BlockId b, LockType type)
     {
         //logger.info(b + " trying to acquire " + type);
-        int waitFor = 1000;
+        int waitFor = 5000;
         long startTime = System.currentTimeMillis();
         if(type == LockType.S_LOCK)
         {
@@ -28,7 +28,7 @@ class GlobalLockTable{
             {
                 try 
                 {
-                    logger.info("Waiting for X_Lock to release");
+                    //logger.info("Waiting for X_Lock to release");
                     wait(waitFor);
                 } 
                 catch (InterruptedException e)
@@ -82,9 +82,13 @@ class GlobalLockTable{
     public synchronized void releaseLock(BlockId b)
     {
         Lock released = lockTable.remove(b);
-        logger.info("Releasing " + released);
+        if(released == null)
+        {
+            return;
+        }
         if(released.getLockType() == LockType.X_LOCK)
         {
+            logger.info("Realizing " + b);
             notifyAll();
         }
     }
@@ -92,7 +96,8 @@ class GlobalLockTable{
     public synchronized void resetAllLockState()
     {
         this.lockTable.clear();
-        multipleSlock.clear();
+        this.multipleSlock.clear();
+        notifyAll();
     }
 
     // Additional methods for deadlock detection, lock upgrading, etc.

@@ -16,34 +16,22 @@ public class ConcurrencyMgr extends ConcurrencyMgrBase
     @Override
     public void sLock(BlockIdBase blk)
     {
-        Lock lock = new Lock(blk, LockType.S_LOCK);
-        if(!locks.containsKey(blk))
-        {
+        if (locks.get(blk) == null) {
+            Lock lock = new Lock(blk, LockType.S_LOCK);
             lockTable.acquireLock((BlockId)blk, LockType.S_LOCK);
             locks.put((BlockId)blk, lock);
-            logger.info("sLock added for: " + lock);
-        }
+         }
     }
 
     @Override
     public void xLock(BlockIdBase blk)
     {
-        Lock lock = new Lock(blk, LockType.X_LOCK);
-        if(!locks.containsKey(blk))
+        if(locks.containsKey(blk) && locks.get(blk).getLockType() == LockType.X_LOCK)
         {
             sLock(blk);
+            Lock lock = new Lock(blk, LockType.X_LOCK);
             lockTable.acquireLock((BlockId)blk, LockType.X_LOCK);
             locks.put((BlockId)blk, lock);
-            logger.info("xLock added for: " + lock);
-            return;
-        }
-        if(locks.get(blk).getLockType() != LockType.X_LOCK)
-        {
-            sLock(blk);
-            lockTable.acquireLock((BlockId)blk, LockType.X_LOCK);
-            locks.put((BlockId)blk, lock);
-            logger.info("xLock added for: " + lock);
-            return;
         }
     }
 
