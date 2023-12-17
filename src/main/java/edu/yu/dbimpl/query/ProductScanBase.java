@@ -16,12 +16,12 @@ package edu.yu.dbimpl.query;
 
 public abstract class ProductScanBase implements Scan {
 
-  /** Constructor.
+  /** Constructor: create a product scan having the two underlying scans.  
    *
-   * Create a product scan having the two underlying scans.
-   *
-   * @param s1 the left-hand-side scan
-   * @param s2 the right-hand-side scan
+   * @param s1 the left-hand-side scan, client transfers ownership, e.g., the
+   * implementation can invoke Scan.beforeFirst().
+   * @param s2 the right-hand-side scan, client transfers ownership, e.g., the
+   * implementation can invoke Scan.beforeFirst().
    */
   public ProductScanBase(Scan s1, Scan s2) {
     // fill me in with your implementation

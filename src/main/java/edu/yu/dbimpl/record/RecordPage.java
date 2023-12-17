@@ -5,14 +5,14 @@ import edu.yu.dbimpl.file.BlockIdBase;
 import edu.yu.dbimpl.tx.Transaction;
 import edu.yu.dbimpl.tx.TxBase;
 
-import java.util.logging.Logger;
+//import java.util.logging.Logger;
 
 public class RecordPage extends RecordPageBase{
 
     private Transaction transaction;
     private BlockId block;
     private Layout layout;
-    private static Logger logger = Logger.getLogger(RecordPage.class.getName());
+    //private static Logger logger = Logger.getLogger(RecordPage.class.getName());
 
     public RecordPage(TxBase tx, BlockIdBase blk, LayoutBase layout) {
         super(tx, blk, layout);
@@ -20,7 +20,7 @@ public class RecordPage extends RecordPageBase{
         this.block = (BlockId) blk;
         this.layout = (Layout) layout;
         transaction.pin(blk);
-        logger.info("RecordPage made");
+        //logger.info("RecordPage made");
     }
 
     @Override
@@ -28,7 +28,7 @@ public class RecordPage extends RecordPageBase{
         int offset = layout.slotSize() * slot;
         int location = layout.offset(fldname) + offset;
         int val = transaction.getInt(block, location);
-        logger.info("getting Int " + val + " at location " + location);
+        //logger.info("getting Int " + val + " at location " + location);
         return val;
     }
 
@@ -37,7 +37,7 @@ public class RecordPage extends RecordPageBase{
         int offset = layout.slotSize() * slot;
         int location = layout.offset(fldname) + offset;
         String val = transaction.getString(block, location);
-        logger.info("getting String " + val + " at location " + location);
+        //logger.info("getting String " + val + " at location " + location);
         return val;
     }
 
@@ -46,7 +46,7 @@ public class RecordPage extends RecordPageBase{
         int offset = layout.slotSize() * slot;
         int location = layout.offset(fldname) + offset;
         Boolean val = transaction.getBoolean(block, location);
-        logger.info("getting Int " + val + " at location " + location);
+        //logger.info("getting Int " + val + " at location " + location);
         return val;
     }
 
@@ -55,7 +55,7 @@ public class RecordPage extends RecordPageBase{
         int offset = layout.slotSize() * slot;
         int location = layout.offset(fldname) + offset;
         Double val = transaction.getDouble(block, location);
-        logger.info("getting Double " + val + " at location " + location);
+        //logger.info("getting Double " + val + " at location " + location);
         return val;
     }
 
@@ -64,15 +64,16 @@ public class RecordPage extends RecordPageBase{
         int offset = layout.slotSize() * slot;
         int location = layout.offset(fldname) + offset;
         transaction.setInt(block, location, val, true);
-        logger.info("Setting int " + val + " at location " + location);
+        
     }
 
     @Override
     public void setString(int slot, String fldname, String val) { //need to stop overwriting other saves in transaction
         int offset = layout.slotSize() * slot;
         int location = layout.offset(fldname) + offset;
+        //logger.info("Setting String " + val + " at location " + location + " length " + val.length() + " oset " + offset);
         transaction.setString(block, location, val, true);
-        logger.info("Setting String " + val + " at location " + location);
+        //logger.info("Setting String " + val + " at location " + location);
     }
 
     @Override
@@ -80,7 +81,7 @@ public class RecordPage extends RecordPageBase{
         int offset = layout.slotSize() * slot;
         int location = layout.offset(fldname) + offset;
         transaction.setBoolean(block, location, val, true);
-        logger.info("Setting Boolean " + val + " at location " + location);
+        //logger.info("Setting Boolean " + val + " at location " + location);
     }
 
     @Override
@@ -88,7 +89,7 @@ public class RecordPage extends RecordPageBase{
         int offset = layout.slotSize() * slot;
         int location = layout.offset(fldname) + offset;
         transaction.setDouble(block, location, val, true);
-        logger.info("Setting double " + val + " at location " + location);
+        //logger.info("Setting double " + val + " at location " + location);
     }
 
     @Override
@@ -126,14 +127,15 @@ public class RecordPage extends RecordPageBase{
                 }
             }
          slot++;
+         offset = layout.slotSize() * slot;
         }
     }
 
     @Override
     public int nextAfter(int slot) {
         slot++;
-        int offset = layout.slotSize() * (slot+1);
-        while (offset <= transaction.blockSize())
+        int offset = layout.slotSize() * (slot);
+        while (layout.slotSize() * (slot+1) <= transaction.blockSize())
         {
             //logger.info("Getting Boolean at offset " + offset);
             if (transaction.getBoolean(block, offset))
@@ -147,8 +149,9 @@ public class RecordPage extends RecordPageBase{
     }
 
     @Override
-    public int insertAfter(int slot) {
-        slot++;
+    public int insertAfter(int slot)
+    {
+        slot++; 
         int offset = layout.slotSize() * (slot);
         int nextSlot = -1;
         while (offset <= transaction.blockSize())
@@ -159,15 +162,22 @@ public class RecordPage extends RecordPageBase{
                 break;
             }
             slot++;
-            offset = layout.slotSize() * slot ;
+            offset = layout.slotSize() * slot;
         } 
-        logger.info("Next Slot: " + nextSlot);
+        //System.out.println("Next Slot: " + nextSlot);
+        if(layout.slotSize() * (nextSlot + 1) >= transaction.blockSize())
+        {
+            //System.out.println("BEFOREFIRSTSLOT");
+            return BEFORE_FIRST_SLOT;
+        }
         if (nextSlot >= 0)
         {
             offset = layout.slotSize() * (slot);
-            this.transaction.setBoolean(block, offset, true, true);
             nextSlot = slot;
+            this.transaction.setBoolean(this.block, offset, true, true);
         }
+        
+        //System.out.println("Getting next slot " + nextSlot);
         return nextSlot;
     }
 

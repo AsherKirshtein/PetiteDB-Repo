@@ -34,7 +34,7 @@ public abstract class SchemaBase {
    * Specifying "length" is very important for the "String" type because only
    * the client has knowledge of the "n" in "varchar(n)".  The server will
    * ignore the length value supplied for all fixed-char field types since it
-   * will supply its own (presumabely correct) values.  No point in requirin
+   * will supply its own (presumabely correct) values.  No point in requiring
    * the client to be aware of the server's implementation choices.
    *
    * @param fldname the name of the field, cannot be null or empty

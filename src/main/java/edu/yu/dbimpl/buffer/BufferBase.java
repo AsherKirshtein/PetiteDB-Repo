@@ -14,11 +14,7 @@ package edu.yu.dbimpl.buffer;
  * Design note: Buffers should be manipulated through the BufferMgr API to the
  * greatest extent possible.  For example, difficult to see how a client can
  * usefully create a Buffer through its constructor since it will not be
- * associated with a disk block.  The BufferMgr "pin" API (which returns a
- * Buffer) is the "designed mechanism" for getting a "useful" Buffer.  Similar
- * design principles for many other Buffer methods: in subsequent iterations, I
- * plan to explore whether to remove all or many of the public Buffer API,
- * relegating the current set to a package-private API.
+ * associated with a disk block.
  *
  * @author Avraham Leff
  */
@@ -44,7 +40,8 @@ public abstract class BufferBase {
    */
   public abstract BlockIdBase block();
 
-  /** Sets the buffer's "modified" bit.  
+  /** Sets the buffer's "modified" bit.  Buffers that have not been modified by
+   * the client should not be flushed to disk.
    *
    * @param txnum
    * @param lsn The LSN of the most recent log record, set to a negative number
@@ -59,44 +56,4 @@ public abstract class BufferBase {
    * @return true iff the buffer is pinned.
    */
   public abstract boolean isPinned();
-
-  /** Returns the id of the transaction that modified this buffer instance.
-   *
-   * @return transaction id.
-   */
-  public abstract int modifyingTx();
-
-  /** Write the buffer to its disk block if it has been modified, syncing the
-   * state of the Buffer's assigned disk block has the same value as its
-   * in-memory Page. If the Page has not been modiﬁed, the implementation
-   * method need not do anything. If it has been modiﬁed, the method ﬁrst calls
-   * LogMgr.flush() to ensure that the corresponding log record is on disk;
-   * only afterwards does the Buffer write the page to disk.
-   *
-   * @see edu.yu.dbimpl.log.LogMgrBase#flush
-   * @see BufferMgrBase#flushAll
-   */
-  public abstract void flush();
-
-  /** Decrement the buffer's pin count.
-   *
-   * @see BufferMgrBase#unpin
-   */
-  public abstract void unpin();
-
-  /** Increment the buffer's pin count (initialized to 0)
-   *
-   * @see BufferMgrBase#pin
-   */
-  public abstract void pin();
-
-  /** Reads the contents of the specified block into the contents of the
-   * buffer.  If the buffer was dirty, then its previous contents must first be
-   * written to disk.
-   *
-   * @param b a reference to the data block
-   */
-  public abstract void assignToBlock(BlockIdBase b);
-
-
 }

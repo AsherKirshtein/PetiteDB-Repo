@@ -1,11 +1,11 @@
 package edu.yu.dbimpl.tx.recovery;
 
 import java.util.Stack;
-import java.util.logging.Logger;
+//import java.util.logging.Logger;
 
 import edu.yu.dbimpl.buffer.*;
 import edu.yu.dbimpl.file.Page;
-import edu.yu.dbimpl.log.LogIterator;
+//import edu.yu.dbimpl.log.LogIterator;
 import edu.yu.dbimpl.log.LogMgrBase;
 import edu.yu.dbimpl.tx.Transaction;
 import edu.yu.dbimpl.tx.TxBase;
@@ -19,7 +19,7 @@ public class RecoveryMgr extends RecoveryMgrBase {
     private int txnum;
     private Stack<LogRecord> records;
 
-    private Logger logger = Logger.getLogger(LogIterator.class.getName());
+    //private Logger logger = Logger.getLogger(RecoveryMgr.class.getName());
     
     public RecoveryMgr(TxBase tx, LogMgrBase logMgr, BufferMgrBase bufferMgr)
     {
@@ -96,8 +96,9 @@ public class RecoveryMgr extends RecoveryMgrBase {
     public int setInt(BufferBase buff, int offset, int newval) 
     {
         Page p = (Page) buff.contents();
+        //System.out.println("offset: " + offset);
         int oldVal = p.getInt(offset);
-        System.out.println("OldVal " + oldVal);
+        //logger.info("OldVal " + oldVal);
         p.setInt(offset, newval);
         LogRecordImpl com = new LogRecordImpl(p,this.txnum, LogRecordType.SET_INT);
         com.setInt(oldVal,offset);
@@ -130,6 +131,7 @@ public class RecoveryMgr extends RecoveryMgrBase {
     @Override
     public int setString(BufferBase buff, int offset, String newval) {
         Page p = (Page) buff.contents();
+        //logger.info("Setting " + newval + " at offset " + offset + " with length " + newval.length());
         String oldVal = p.getString(offset);
         p.setString(offset, newval);
         LogRecordImpl com = new LogRecordImpl(p, this.txnum, LogRecordType.SET_STRING);

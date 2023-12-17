@@ -20,6 +20,9 @@ import edu.yu.dbimpl.tx.TxBase;
  * you choose to persist it, the implementation must not change the offset or
  * the block state (i.e., such meta-data must be persisted in a way that is
  * transparent to the client).
+ *
+ * Design note: a given instance of a TableScan need not be thread-safe.
+ 
  */
 public abstract class TableScanBase implements UpdateScan {
 
@@ -42,7 +45,8 @@ public abstract class TableScanBase implements UpdateScan {
   }
 
   /** Returns the file name (relative to the dbDirectory parameter supplied to
-   * the FileMgr) that the 
+   * the FileMgr) that the implementation used to name the file storing the
+   * table's data.
    *
    * @return name of the file used by the implementation to store the table's
    * data.

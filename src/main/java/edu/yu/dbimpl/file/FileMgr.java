@@ -155,7 +155,7 @@ public class FileMgr extends FileMgrBase{
                 byte[] newBlock = new byte[blockSize()];
                 randomAccessFile.seek(position);
                 randomAccessFile.write(newBlock);
-                return new BlockId(filename, blockSize());
+                return new BlockId(filename, length(filename));
             } 
             catch (IOException e) 
             {

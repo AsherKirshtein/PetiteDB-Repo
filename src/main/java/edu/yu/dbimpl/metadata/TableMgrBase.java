@@ -10,10 +10,10 @@ package edu.yu.dbimpl.metadata;
  * TableMgrBase constrains the TableMgr design by implicitly assuming an
  * implementation consisting of one table that stores meta-data about table
  * names, and another tables that stores meta-data about field names.  Also:
- * the names of these tables and their field names is specified by constants.
- * In general, PetiteDB tries to give implementations more freedom, but hard to
- * see how to define a testable interface that doesn't use Java's reflection
- * APIs to do the job.
+ * the names of these tables and some of their field names are constrained to
+ * match the specified public constants.  In general, PetiteDB tries to give
+ * implementations more freedom, but hard to see how to define a testable
+ * interface that doesn't use e.g., Java's reflection APIs to do the job.
  *
  * A TableMgr stores the meta-data about tables created by users, thus creating
  * and managing a catalog.  Implementations MUST SUPPORT client ability to
@@ -34,15 +34,29 @@ public abstract class TableMgrBase {
 
   /** Constants that define the tables and table fields used by the TableMgr
    */
+
+  /** Name of the table storing meta-data about all tables created by the
+   * system (not just user-created tables)
+   */
   public static final String TABLE_META_DATA_TABLE = "tblcat";
-  public static final String FIELD_META_DATA_TABLE = "fldcat";
+
+  /** TABLE_META_DATA_TABLE MUST store table names in this attribute.
+   */
   public static final String TABLE_NAME = "tblname";
+  
+  /** Name of the table storing field meta-data: implementations are
+   * responsible for storing the requisite information to support the TableMgr
+   * APIs, but the number and names of the fields in this table are
+   * implementation dependent.
+   */
+  public static final String FIELD_META_DATA_TABLE = "fldcat";
 
   /** Constructor: create a new catalog manager.
    *
    * @param isNew true iff this is the first time that the database is being
    * created (for this file system root): implicitly requests that the TableMgr
-   * creates the two meta-data catalog tables.
+   * create and populate the two meta-data catalog tables with information
+   * about themselves.
    * @param tx supplies the transactional scope for database operations used in
    * the constructor implementation.
    */

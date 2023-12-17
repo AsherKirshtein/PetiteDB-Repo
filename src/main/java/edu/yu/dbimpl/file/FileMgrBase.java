@@ -19,12 +19,9 @@ package edu.yu.dbimpl.file;
  * exactly one disk access per call.
  *
  * The FileMgr class handles the actual interaction with the OS's file
- * system. Its constructor takes two arguments: a string denoting the name of
- * the database and an integer denoting the size of each block. The database
- * name is used as the name of the directory that contains the files for the
- * database; this folder is located in the DBMS current directory. If no such
- * folder exists, then a folder is created for a new database. The method isNew
- * returns true in this case and false otherwise.
+ * system. Its constructor takes two arguments: a File specifying the root
+ * directory of the database and an integer denoting the size of every database
+ * block. 
  *
  * Note: the "current directory" is the directory from where the JVM was
  * invoked.  See e.g., https://stackoverflow.com/a/15954821 for the difference
@@ -51,13 +48,17 @@ import java.io.*;
 public abstract class FileMgrBase {
 
   /** The constructor is responsible for removing temporary files and
-   * directories that may have been created in previous invocations of the
-   * DBMS.  By convention, such files and directories are denoted by starting
-   * with the string "temp".
+   * directories contained in dbDirectory that may have been created in
+   * previous invocations of the DBMS.  By convention, such files and
+   * directories are denoted by starting with the string "temp".  The
+   * dbDirectory is never deleted even if prefixed with "temp".
    *
    * @param dbDirectory specifies the location of the root database directory
-   * in which files will be created
-   * @param blockSize size of blocks to be used in this database
+   * in which files will be created.  The root directory is the containing
+   * directory for all database files. If no such directory exists when the
+   * constructor is invoked, the implementation will create it.  The method
+   * isNew() returns true in this case and false otherwise.
+   * @param blockSize size of blocks to be used in this database.
    */
   public FileMgrBase(File dbDirectory, int blocksize) {
     // fill me in in your implementation class!

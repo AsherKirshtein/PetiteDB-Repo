@@ -18,7 +18,7 @@ package edu.yu.dbimpl.record;
  * Because the Layout encapsulates the Schema supplied by the client, the
  * client transfers ownership of the schema, and may no longer mutate the
  * Schema instance.
-
+ *
  * The first bytes of the record MUST BE used to store the Boolean-valued
  * "in-use/empty" flag.  All records fields MUST BE layed out in the order that
  * the client invoked addField.  Aside from this requirement, layout offsets
@@ -54,10 +54,10 @@ public abstract class LayoutBase {
    *
    * @param schema the schema of the table's records
    * @param offsets the already-calculated offsets of the fields within a record
-   * @param recordlen the already-calculated length of each record
+   * @param slotSize pre-calculated length of each record slot
    */
   public LayoutBase(SchemaBase schema, Map<String,Integer> offsets,
-                int slotsize)
+                int slotSize)
   {
     // fill me in
   }

@@ -5,9 +5,21 @@ package edu.yu.dbimpl.parse;
  *
  * The "lexer" lecture defines the set of PetiteDB Token types.  The TokenType
  * enum below corresponds to what's defined in lecture and adds an EOF value.
-
+ *
  * Students MAY NOT modify this class in any way!.
  *
+ * Design note: the Token API distinguishes between floating point numbers and
+ * all integer types by distinguishing between INT_CONSTANT and
+ * DOUBLE_CONSTANT.  If the input stream contains an "integer" value (e.g.,
+ * "42"), the token "value" MUST contain only "42", and the token type MUST be
+ * INT_CONSTANT.  If the input stream contains a "floating point" portion that
+ * "makes no difference" (e.g., "42.0"), the token "value" MUST contain only
+ * "42" (dropping the ".0") to ease client conversion of that value to an
+ * integer or floating point number as necessary.  The type of the token will
+ * be INT_CONSTANT.  Only when the input stream contains a floating point
+ * portion greater than zero MUST the token "value" preserve the floating point
+ * portion of the token, and the token type MUST then be DOUBLE_CONSTANT.
+ * 
  * Design note: the lexer API is deliberately very unconstrained to allow for
  * maximum implementation freedom subject to the constraint of testability.
  * Implementors should consider adding "consume specific token type" APIs on
@@ -28,7 +40,8 @@ public abstract class LexerBase {
   /** Define an enum that specifies the set of valid token types
    */
   public enum TokenType {
-    DELIMITER, EOF, ID, NUMERIC_CONSTANT, KEYWORD, STRING_CONSTANT
+    DELIMITER, COMPARISON_OP, EOF, ID, INT_CONSTANT, DOUBLE_CONSTANT, BOOLEAN_CONSTANT,
+    KEYWORD, STRING_CONSTANT 
   };
 
   /** An immutable holder class: because immutable, clients get direct analysis
@@ -82,28 +95,26 @@ public abstract class LexerBase {
   /** Constructor: creates a new lexical analyzer to be used for parsing a
    * PetiteDB SQL statement.  Upon completion of the constructor invocation,
    * the lexer must have consumed one token, and is able to return that token
-   * via firstToken().
+   * via firstTokenRetrieved().
    *
    * See lecture discussion for the Lexer requirements.
    *
    * @param s the statement to be lex'd
    * @throws BadSyntaxException if a problem occurs when reading the input for
    * the first token.
-   * @see firstToken
+   * @see firstTokenRetrieved
    */
   public LexerBase(String s) {
     // fill me in in your implementation class!
   }
 
-  /** Returns the first token that the constructor extracted from the input
-   * (even if the client makes subsequent calls to next(), this method will
-   * return the first token extracted).
+  /** Returns the first token that the constructor extracted from the input.
+   * Clients extract subsequent tokens via calls to nextToken(); this method
+   * will return the first token (extracted by the constructor).
    *
    * @return Token first token in the input
-   * @throws BadSyntaxException if a problem occurs when reading the input for
-   * the first token.
    */
-  abstract public Token firstToken();
+  abstract public Token firstTokenRetrieved();
 
   /** Extracts the next token from the input.  When all input has been
    * consumed, the token type of that last token must be EOF.  Subsequent
@@ -113,6 +124,11 @@ public abstract class LexerBase {
    * input
    */
   public abstract Token nextToken() throws BadSyntaxException;
+
+  /** Defines the set of valid PetiteDB comparison operators as an unmodifable list
+   */
+  public final static List<Character> comparisonOperators = Collections.
+    unmodifiableList(Arrays.asList('=', '>', '<'));
 
   /** Defines the set of valid PetiteDB keywords as an unmodifiable List
    */

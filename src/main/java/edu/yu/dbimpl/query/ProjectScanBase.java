@@ -18,12 +18,11 @@ import java.util.List;
 
 public abstract class ProjectScanBase implements Scan {
 
-  /** Constructor.
+  /** Constructor: create a project scan having the specified underlying scan
+   * and field list of columns to keep (all other field names will be dropped).
    *
-   * Create a project scan having the specified underlying scan and field
-   * list of columns to keep (all other field names will be dropped).
-   *
-   * @param scan representing the input relation
+   * @param scan representing the input relation, client transfers ownership,
+   * e.g., the implementation can invoke Scan.beforeFirst().
    * @param fields list of field names to keep
    */
   public ProjectScanBase(Scan scan, List<String> fields) {

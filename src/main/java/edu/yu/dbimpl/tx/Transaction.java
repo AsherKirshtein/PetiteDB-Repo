@@ -1,6 +1,6 @@
 package edu.yu.dbimpl.tx;
 
-import java.util.logging.Logger;
+//import java.util.logging.Logger;
 
 import edu.yu.dbimpl.buffer.Buffer;
 import edu.yu.dbimpl.buffer.BufferBase;
@@ -24,6 +24,7 @@ public class Transaction extends TxBase {
 
     private static int txnum = 0;//figure out how to make these values increment monotonically
     //private static Logger logger = Logger.getLogger(Transaction.class.getName());
+    int currentBlk = 0;
 
 
     public Transaction(FileMgrBase fm, LogMgrBase lm, BufferMgrBase bm) 
@@ -98,7 +99,7 @@ public class Transaction extends TxBase {
         //acquires an "s-lock" on behalf of the client
         this.concurrencyMgr.sLock(blk);
         Buffer buffer = totalBuffers.getBuffer(blk);
-        int val = buffer.page.getInt(offset);
+        int val = buffer.contents().getInt(offset);
         //logger.info(blk + " getting Int " + val + " at offset " + offset);
         return val;
     }
@@ -107,7 +108,7 @@ public class Transaction extends TxBase {
     public boolean getBoolean(BlockIdBase blk, int offset) {
         this.concurrencyMgr.sLock(blk);
         Buffer buffer = totalBuffers.getBuffer(blk);
-        return buffer.page.getBoolean(offset);
+        return buffer.contents().getBoolean(offset);
     }
 
     @Override
@@ -115,14 +116,14 @@ public class Transaction extends TxBase {
         this.concurrencyMgr.sLock(blk);
         Buffer buffer = totalBuffers.getBuffer(blk);
         //logger.info(blk + " getting Double " + buffer.page.getDouble(offset) + " at offset " + offset);
-        return buffer.page.getDouble(offset);
+        return buffer.contents().getDouble(offset);
     }
 
     @Override
     public String getString(BlockIdBase blk, int offset) {
         this.concurrencyMgr.sLock(blk);
         Buffer buffer = totalBuffers.getBuffer(blk);
-        String val =buffer.page.getString(offset);
+        String val =buffer.contents().getString(offset);
         //logger.info(blk + " added " + val + " at offset " + offset);
         return val;
     }
@@ -130,6 +131,10 @@ public class Transaction extends TxBase {
     @Override
     public void setInt(BlockIdBase blk, int offset, int val, boolean okToLog)
     {
+        if(offset + 4 >=  blockSize())
+        {
+            throw new IndexOutOfBoundsException("Can't insert into page because the offset " + offset + "plus the int would exceed the blocksize");
+        }
         this.concurrencyMgr.xLock(blk);
         Buffer buffer = totalBuffers.getBuffer(blk);
         int lsn = -69;
@@ -144,6 +149,10 @@ public class Transaction extends TxBase {
 
     @Override
     public void setBoolean(BlockIdBase blk, int offset, boolean val, boolean okToLog) {
+        if(offset + 4 >=  blockSize())
+        {
+            throw new IndexOutOfBoundsException("Can't insert into page because the offset " + offset + " plus the boolean would exceed the blocksize");
+        }
         this.concurrencyMgr.xLock(blk);
         Buffer buffer = totalBuffers.getBuffer(blk);
         int lsn = -69;
@@ -151,14 +160,17 @@ public class Transaction extends TxBase {
         {
             lsn = recoveryMgr.setBoolean((BufferBase) buffer, offset, val);
         }
-        buffer.page.setBoolean(offset, val);
+        buffer.contents().setBoolean(offset, val);
         buffer.setModified(txnum, lsn);
-        buffer.page.setBoolean(offset, val);
         //logger.info(blk + " added " + val + " at offset " + offset);
     }
 
     @Override
     public void setDouble(BlockIdBase blk, int offset, double val, boolean okToLog) {
+        if(offset + 8 >=  blockSize())
+        {
+            throw new IndexOutOfBoundsException("Can't insert into page because the offset " + offset + " the double would exceed the blocksize");
+        }
         this.concurrencyMgr.xLock(blk);
         Buffer buffer = totalBuffers.getBuffer(blk);
         int lsn = -69;
@@ -166,25 +178,30 @@ public class Transaction extends TxBase {
         {
             lsn = recoveryMgr.setDouble((BufferBase) buffer, offset, val);
         }
-        buffer.page.setDouble(offset, val);
+        buffer.contents().setDouble(offset, val);
         buffer.setModified(txnum, lsn);
-        buffer.page.setDouble(offset, val);
+        //buffer.page.setDouble(offset, val);
         //logger.info(blk + " added " + val + " at offset " + offset);
     }
 
     @Override
     public void setString(BlockIdBase blk, int offset, String val, boolean okToLog)
     {
+        if(offset + val.length() >=  blockSize())
+        {
+            throw new IndexOutOfBoundsException("Can't insert into page because the offset " + offset + " the String would exceed the blocksize");
+        }
         this.concurrencyMgr.xLock(blk);
         Buffer buffer = totalBuffers.getBuffer(blk);
         int lsn = -69;
         if (okToLog)
         {
+            //logger.info("String: " + val + " offset: " + offset + " length: " + val.length());
             lsn = recoveryMgr.setString((BufferBase) buffer, offset, val);
         }
-        buffer.page.setString(offset, val);
+        buffer.contents().setString(offset, val);
         buffer.setModified(txnum, lsn);
-        buffer.page.setString(offset, val);
+        //buffer.page.setString(offset, val);
         //logger.info(blk + " added " + val + " at offset " + offset);
     }
 
@@ -197,7 +214,7 @@ public class Transaction extends TxBase {
     @Override
     public BlockIdBase append(String filename) 
     {
-        BlockId blk = new BlockId(filename, blockSize());
+        BlockId blk = new BlockId(filename, 0);
         this.concurrencyMgr.xLock(blk);
         BlockIdBase b = fileMgr.append(filename);
         return b;

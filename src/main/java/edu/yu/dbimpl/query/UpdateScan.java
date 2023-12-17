@@ -13,7 +13,8 @@ public interface UpdateScan extends Scan {
    *
    * @param fldname the name of the field
    * @param val the new value, expressed as a DatumBase
-   * @throws IllegalArgumentException if fldname is not part of the schema
+   * @throws IllegalArgumentException if fldname is not part of the schema or
+   * if the type of val is incorrect for fldname's type
    */
   public void setVal(String fldname, DatumBase val);
    
@@ -21,7 +22,8 @@ public interface UpdateScan extends Scan {
    *
    * @param fldname the name of the field
    * @param val the new integer value
-   * @throws IllegalArgumentException if fldname is not part of the schema
+   * @throws IllegalArgumentException if fldname is not part of the schema or
+   * if the type of val is incorrect for fldname's type
    */
   public void setInt(String fldname, int val);
 
@@ -29,27 +31,26 @@ public interface UpdateScan extends Scan {
    *
    * @param fldname the name of the field
    * @param val the new double value
-   * @throws IllegalArgumentException if fldname is not part of the schema
+   * @throws IllegalArgumentException if fldname is not part of the schema or
+   * if the type of val is incorrect for fldname's type
    */
-  public default void setDouble(String fldname, double val) {
-    throw new UnsupportedOperationException();
-  }
+  public void setDouble(String fldname, double val);
 
   /** Modifies the field value in the current record.
    *
    * @param fldname the name of the field
    * @param val the new boolean value
-   * @throws IllegalArgumentException if fldname is not part of the schema   
+   * @throws IllegalArgumentException if fldname is not part of the schema or
+   * if the type of val is incorrect for fldname's type
    */
-  public default void setBoolean(String fldname, boolean val) {
-    throw new UnsupportedOperationException();
-  }
+  public void setBoolean(String fldname, boolean val);
   
   /** Modifies the field value in the current record.
    *
    * @param fldname the name of the field
    * @param val the new string value
-   * @throws IllegalArgumentException if fldname is not part of the schema   
+   * @throws IllegalArgumentException if fldname is not part of the schema or
+   * if the type of val is incorrect for fldname's type
    */
   public void setString(String fldname, String val);
    

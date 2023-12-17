@@ -16,13 +16,15 @@ import edu.yu.dbimpl.tx.TxBase;
  * discussed in lecture and textbook.
  *
  * Design note: the only methods available for manipulating the crucial
- * "in-use" flags are insertAfter() and delete().  Setting slot-values without
- * first setting the "in-use" flag will not accomplish what you're trying to
- * accomplish.
+ * "in-use" flags are insertAfter() and delete().  Setting (or getting)
+ * slot-values without first setting the "in-use" flag will not accomplish what
+ * you're trying to accomplish.
  * 
  * Design note: can help to consider the RecordPageBase API as moving parts of
  * the TxBase API "up a level" such that clients can get/set values in terms of
- * field names rather than block locations.
+ * field names rather than block locations.  Similarly, at the RecordPageBase
+ * level of abstraction, clients delegate responsibility for pinning and
+ * unpinning the encapsulated block to the RecordPage implementation.
  */
 
 public abstract class RecordPageBase {
@@ -115,7 +117,7 @@ public abstract class RecordPageBase {
    *
    * @param slot specifies location storing the value, must be non-negative.
    * @param fldname must be defined on the page's layout
-   * @param val the string value stored in that field
+   * @param val the boolean value stored in that field
    * @throws IllegalArgumentException if pre-conditions are violated.      
    */
   public abstract void setBoolean(int slot, String fldname, boolean val);
@@ -124,7 +126,7 @@ public abstract class RecordPageBase {
    *
    * @param slot specifies location storing the value, must be non-negative.
    * @param fldname must be defined on the page's layout
-   * @param val the string value stored in that field
+   * @param val the double value stored in that field
    * @throws IllegalArgumentException if pre-conditions are violated.   
    */
   public abstract void setDouble(int slot, String fldname, double val);

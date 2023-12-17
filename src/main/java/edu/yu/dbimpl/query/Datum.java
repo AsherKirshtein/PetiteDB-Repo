@@ -49,7 +49,7 @@ public class Datum extends DatumBase{
         {
             return 0;
         }
-        if(this.bval == o.asBoolean() && this.dval == o.asDouble() && this.ival == o.asInt() && this.sval == o.asString())
+        if(this.bval == o.asBoolean() || this.dval == o.asDouble() || this.ival == o.asInt() || this.sval == o.asString())
         {
             return 1;
         }
@@ -80,6 +80,34 @@ public class Datum extends DatumBase{
     public int getSQLType()
     {
         return this.sqltype;
+    }
+
+    @Override
+    public String toString() {
+        String s = "";
+        s += "SQL type: " + this.sqltype + "\n";
+        s += "Integer value: " + this.ival + "\n";
+        s += "String value: " + this.sval + "\n";
+        s += "Boolean value: " + this.bval + "\n";
+        s += "Double value: " + this.dval + "\n";
+        return s;
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        if(!(obj instanceof Datum))
+        {
+            return false;
+        }
+        Datum other= (Datum) obj;
+        return other.toString().hashCode() == this.toString().hashCode();
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return this.toString().hashCode();
     }
     
 }

@@ -28,7 +28,7 @@ interface LogRecord {
    * may not apply to all LogRecord types, and they are free to provide a no-op
    * implementation.
    *
-   * @param txnum the id of the transaction that is performing the undo.
+   * @param tx the transaction that is performing the undo operation.
    */
   void undo(TxBase tx);
 }

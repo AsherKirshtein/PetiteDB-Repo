@@ -11,25 +11,29 @@ import edu.yu.dbimpl.record.*;
 
 public class Expression {
 
-  /** Constructor which takes a DatumBase.
+  /** Constructor which takes a DatumBase value.
    */
   public Expression(final DatumBase val) {
     this.val = val;
+    this.fldname = null;
   }
    
   /** Constructor which takes a String that names a single field (column).
    */
   public Expression(final String fldname) {
     this.fldname = fldname;
+    this.val = null;
   }
    
   /** Evaluate the expression by extracting the value corresponding to the
    * field name from the current record of the specified scan.
    *
-   * @param scan the scan, assumed to be positioned on a valid record.
+   * @param scan the scan, assumed to be positioned on a valid record.  The
+   * behavior of this method is unspecified if the scan isn't positioned on a
+   * valid record.
    * @return the "DatumBase" supplied by the constructior if a "constant"
-   * expression, the value of the scan's current "record.fieldName" if a "field
-   * name" expression
+   * expression; otherwise, the value of the scan's current "record.fieldName"
+   * if a "field name" expression
    */
   public DatumBase evaluate(Scan scan) {
     return (val != null) ? val : scan.getVal(fldname);
@@ -59,8 +63,8 @@ public class Expression {
     return fldname;
   }
    
-  /** Determine if all of the fields mentioned in this expression are
-   * contained in the specified schema.
+  /** Determine if all of the fields mentioned in this expression are contained
+   * in the specified schema.
    *
    * @param schema the schema
    * @return if a "constant" expression, returns true; if a "field name"
@@ -111,6 +115,6 @@ public class Expression {
     return (val != null) ? val.toString() : fldname;
   }
 
-  private DatumBase val = null;
-  private String fldname = null;
+  private final DatumBase val;
+  private final String fldname;
 }

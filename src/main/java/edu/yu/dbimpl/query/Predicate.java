@@ -54,22 +54,6 @@ public class Predicate {
     terms.addAll(thoseTerms);
   }
   
-  /** Returns true iff the predicate evaluates to true with respect to the
-   * record currently pointed by the specified scan.
-   *
-   * @param scan the scan
-   * @return true if all terms in the predicate evaluate to true with respect
-   * to the current record.
-   */
-  public boolean isSatisfied(final Scan scan) {
-    for (Term t : terms) {
-      if (!t.isSatisfied(scan))
-        return false;
-    }
-
-    return true;
-  }
-
   @Override
   public String toString() {
     Iterator<Term> iter = terms.iterator();
@@ -116,5 +100,7 @@ public class Predicate {
     return Collections.unmodifiableSet(new HashSet<>(terms));
   }
 
-  private final List<Term> terms = new ArrayList<Term>();
+  // deliberately package protected: claim that ok to do so because "friends" +
+  // List is imutable (but note that the contents of the List is mutable
+  final List<Term> terms = new ArrayList<Term>();
 } // class

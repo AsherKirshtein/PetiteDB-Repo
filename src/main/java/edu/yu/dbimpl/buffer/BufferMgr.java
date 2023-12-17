@@ -98,7 +98,11 @@ public class BufferMgr extends BufferMgrBase
   {
     synchronized(this)
     {  
-      buffer.unpin();
+      if(buffer == null)
+      {
+          return;
+      }
+      ((Buffer) buffer).unpin();
       if (!buffer.isPinned()) 
       {
         this.availableBuffersCount++;

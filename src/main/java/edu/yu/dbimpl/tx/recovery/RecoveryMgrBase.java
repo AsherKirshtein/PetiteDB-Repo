@@ -3,7 +3,7 @@ package edu.yu.dbimpl.tx.recovery;
 /** Specifies the public API for the RecoveryMgr implementation by requiring all
  * RecoveryMgr implementations to extend this base class.
  *
- * Students MAY NOT modify this class in any way, they must support EXACTLY
+ * Students MAY NOT modify this class in any way, they must suppport EXACTLY
  * the constructor signatures specified in the base class (and NO OTHER
  * signatures).
  *

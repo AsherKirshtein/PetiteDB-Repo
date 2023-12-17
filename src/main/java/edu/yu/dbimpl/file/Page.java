@@ -10,7 +10,7 @@ public class Page extends PageBase
     ByteBuffer buffer;
     public byte[] b;
     public int offset;
-    //Logger logger = Logger.getLogger(Page.class.getName());
+    Logger logger = Logger.getLogger(Page.class.getName());
 
     public Page(byte[] b)
     {
@@ -39,7 +39,7 @@ public class Page extends PageBase
     public void setInt(int offset, int n) 
     {
         this.buffer.putInt(offset, n);
-        Logger.getLogger(Page.class.getName()).info("int "+ n + " set at offset " + offset);
+        //Logger.getLogger(Page.class.getName()).info("int "+ n + " set at offset " + offset);
     }
 
     @Override
@@ -96,17 +96,20 @@ public class Page extends PageBase
     }
 
     @Override
-    public String getString(int offset) {
+    public String getString(int offset)
+    {
         int length = this.buffer.getInt(offset);
-        //logger.info("String length: " + length);
+        //logger.info("String length: " + length + " at offset " + offset);
         offset += Integer.BYTES; // Move position to read string
-        return new String(this.b, offset, length, CHARSET);
+        //logger.info("Reading String from offset " + offset + " length " + length  + " str = " + new String(this.b, offset, length, StandardCharsets.UTF_8));
+        return new String(this.b, offset, length, StandardCharsets.UTF_8);
     }
 
     @Override
     public void setString(int offset, String s) 
     {
-        buffer.putInt(offset, s.length()); // Store string length
+        buffer.putInt(offset, maxLength(s.length())); // Store string length
+        //logger.info("String length: " + s.length() + " at offset " + offset);
         buffer.position(offset + Integer.BYTES); // Move position to write string
         buffer.put(s.getBytes(StandardCharsets.UTF_8));
         //logger.info("String: "+ s +" set at offset " + offset);

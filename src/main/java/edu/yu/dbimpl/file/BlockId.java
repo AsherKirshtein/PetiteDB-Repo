@@ -29,7 +29,7 @@ public class BlockId extends BlockIdBase {
     @Override
     public String toString() {
         // TODO Auto-generated method stub
-        return this.filename + this.blknum ;
+        return this.filename + " " + this.blknum;
     }
     
 }

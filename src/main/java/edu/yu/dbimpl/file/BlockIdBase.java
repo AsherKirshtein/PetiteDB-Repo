@@ -17,7 +17,8 @@ package edu.yu.dbimpl.file;
 public abstract class BlockIdBase {
   /** Constructor
    *
-   * @param fileName must have a trimmed length that's greater than 0.
+   * @param fileName Specified relative to the FileMgr dbDirectory; must have a
+   * trimmed length that's greater than 0.
    * @param blknum must be a non-negative integer
    * @throws IllegalArgumentException as appropriate
    */

@@ -3,17 +3,17 @@ package edu.yu.dbimpl.file;
 /** Specifies the public API for the Page implementation by requiring all
  * Page implementations to extend this base class.
  *
- * Students MAY NOT modify this class in any way, they must support EXACTLY
+ * Students MAY NOT modify this class in any way, they must suppport EXACTLY
  * the constructor signatures specified in the base class (and NO OTHER
  * signatures).
  *
  * A Page represents the main-memory region used to hold the contents of a
  * block, and thus is used by the FileMgr in tandem with a BlockId.  A Page can
- * hold three value types: ints, strings, and "blobs" (i.e., arbitrary arrays
- * of bytes).  At the Page API abstraction, a client can store a value at any
- * offset of the page but is responsible for knowing what values have been
- * stored where.  The result of trying to retrieve a value from the wrong
- * offset is undefined.
+ * hold any of the following value types: ints, doubles, booleans, strings, and
+ * "blobs" (i.e., arbitrary arrays of bytes).  At the Page API abstraction, a
+ * client can store a value at any offset of the page but is responsible for
+ * knowing what values have been stored where.  The result of trying to
+ * retrieve a value from the wrong offset is undefined.
  *
  * I prefer to not constrain implementation!  That said: your implementation
  * must follow the design for storing values of a given type (fixed-length
@@ -101,11 +101,6 @@ public abstract class PageBase {
    * convert the serialized bytes into a Page instance that wraps the original
    * log record.  The log record's data can then be accessed via the Page
    * getter APIs.
-   *
-   * It is the client's responsibility to ensure that the byte array length
-   * doesn't exceed the blocksize supplied to the FileMgr.  The implementation
-   * may choose to throw IllegalArgumentException if its metadata together with
-   * the byte array exceed a single block.
    *
    * @param b a byte array containing ints and properly encoded Strings in a
    * scheme known to the client.

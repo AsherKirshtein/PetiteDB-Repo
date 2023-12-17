@@ -78,7 +78,7 @@ public abstract class ParserInterfaceBase {
   public abstract Expression expression();
 
   /** Parses the constructor parameter as an "Term" (see PetiteDB grammar)
-b   *
+   *
    * @return the parsed field if valid
    * @throws BadSyntaxException if the parser (given its current state relative
    * to the input) can't extract the specified grammar construct.
