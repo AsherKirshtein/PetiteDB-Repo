@@ -102,7 +102,7 @@ public class Page extends PageBase
         //logger.info("String length: " + length + " at offset " + offset);
         offset += Integer.BYTES; // Move position to read string
         //logger.info("Reading String from offset " + offset + " length " + length  + " str = " + new String(this.b, offset, length, StandardCharsets.UTF_8));
-        return new String(this.b, offset, length, StandardCharsets.UTF_8);
+        return new String(this.b, offset, length, StandardCharsets.UTF_8).trim();
     }
 
     @Override

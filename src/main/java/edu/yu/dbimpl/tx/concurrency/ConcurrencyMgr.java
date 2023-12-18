@@ -2,14 +2,14 @@ package edu.yu.dbimpl.tx.concurrency;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Logger;
+//import java.util.logging.Logger;
 
 import edu.yu.dbimpl.file.BlockId;
 import edu.yu.dbimpl.file.BlockIdBase;
 
 public class ConcurrencyMgr extends ConcurrencyMgrBase 
 {
-    private static Logger logger = Logger.getLogger(ConcurrencyMgr.class.getName());
+    //private static Logger logger = Logger.getLogger(ConcurrencyMgr.class.getName());
     private static GlobalLockTable lockTable = new GlobalLockTable();
     private Map<BlockId,Lock> locks = new HashMap<>();
 

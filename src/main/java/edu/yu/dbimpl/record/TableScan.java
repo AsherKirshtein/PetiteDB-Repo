@@ -1,6 +1,8 @@
 package edu.yu.dbimpl.record;
 
-import java.util.logging.Logger;
+import java.util.HashMap;
+import java.util.Map;
+//import java.util.logging.Logger;
 
 import edu.yu.dbimpl.file.BlockId;
 import edu.yu.dbimpl.file.BlockIdBase;
@@ -16,6 +18,7 @@ public class TableScan extends TableScanBase
     private RecordPage recordPage;
     private String tableName;
     private int slot;
+    private Map<String,Integer> typeToFile;
     //private static Logger logger = Logger.getLogger(TableScan.class.getName());
 
     public TableScan(TxBase tx, String tblname, LayoutBase layout)
@@ -38,6 +41,7 @@ public class TableScan extends TableScanBase
             BlockId blk = new BlockId(this.tableName + ".tbl", 0);
             this.recordPage = new RecordPage(tx, blk, layout);
         }
+        this.typeToFile = new HashMap<>();
     }
 
     @Override
@@ -47,15 +51,19 @@ public class TableScan extends TableScanBase
         {
             case 1://val is an int(look in datum class for value assignment)
                 setInt(fldname, val.asInt());
+                this.typeToFile.put(fldname, 1);
                 break;
             case 2: //val is a String
                 setString(fldname, val.asString());
+                this.typeToFile.put(fldname, 2);
                 break;
             case 3: //val is a boolean
                 setBoolean(fldname, val.asBoolean());
+                this.typeToFile.put(fldname, 3);
                 break;
             case 4: //val is a Double
                 setDouble(fldname, val.asDouble());
+                this.typeToFile.put(fldname, 4);
                 break;
             default: 
                 break;
@@ -263,20 +271,18 @@ public class TableScan extends TableScanBase
 
     @Override
     public void setDouble(String fldname, double val) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'setDouble'");
+        this.recordPage.setDouble(this.slot, fldname, val);
     }
 
     @Override
     public void setBoolean(String fldname, boolean val) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'setBoolean'");
+        this.recordPage.setBoolean(this.slot, fldname, val);
     }
 
     @Override
-    public int getType(String fldname) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getType'");
+    public int getType(String fldname)
+    {
+        return this.typeToFile.get(fldname);    
     }
     
 }

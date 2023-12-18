@@ -100,7 +100,7 @@ public class Datum extends DatumBase{
         {
             return false;
         }
-        Datum other= (Datum) obj;
+        Datum other = (Datum) obj;
         return other.toString().hashCode() == this.toString().hashCode();
     }
 

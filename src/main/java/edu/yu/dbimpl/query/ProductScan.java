@@ -1,6 +1,6 @@
 package edu.yu.dbimpl.query;
 
-import java.util.logging.Logger;
+//import java.util.logging.Logger;
 
 
 public class ProductScan extends ProductScanBase

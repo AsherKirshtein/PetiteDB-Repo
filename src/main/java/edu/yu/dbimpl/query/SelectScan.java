@@ -20,7 +20,6 @@ public class SelectScan extends SelectScanBase
         {
             throw new ClassCastException("Need to put in a type of Update Scan");
         }    
-        validatePredicate(predicate);  
         this.predifile = predicate;
     }
 
@@ -144,11 +143,5 @@ public class SelectScan extends SelectScanBase
     public int getType(String fldname) 
     {
        return this.scan.getType(fldname);
-    }
-
-    private void validatePredicate(Predicate p)
-    {
-        return;
-    }
-    
+    }  
 }
