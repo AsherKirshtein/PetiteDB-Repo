@@ -84,12 +84,29 @@ public class Datum extends DatumBase{
 
     @Override
     public String toString() {
-        String s = "";
-        s += "SQL type: " + this.sqltype + "\n";
-        s += "Integer value: " + this.ival + "\n";
-        s += "String value: " + this.sval + "\n";
-        s += "Boolean value: " + this.bval + "\n";
-        s += "Double value: " + this.dval + "\n";
+        String s = "\n{";
+        //s += "SQL type: " + this.sqltype + "\n";
+        if(this.ival != null)
+        {
+            s += "SQL type: " + this.sqltype + "/Integer\n";
+            s += "Integer value: " + this.ival;
+        }
+        if(this.sval != null)
+        {
+            s += "SQL type: " + this.sqltype + "/String\n";
+            s += "String value: " + this.sval;
+        }
+        if(this.bval != null)
+        {
+            s += "SQL type: " + this.sqltype + "/Boolean\n";
+            s += "Boolean value: " + this.bval;
+        }
+        if(this.dval != null)
+        {
+             s += "SQL type: " + this.sqltype + "/dVal\n";
+            s += "Double value: " + this.dval;
+        }
+        s+= "}\n";
         return s;
     }
 
