@@ -161,7 +161,7 @@ public class Lexer extends LexerBase{
 
     private boolean isBoolean(String word)
     {
-        return word.equalsIgnoreCase("true") || word.equalsIgnoreCase("false");
+        return "true".equalsIgnoreCase(word) || "false".equalsIgnoreCase(word);
     }
 
     private boolean isID(String word)
@@ -255,10 +255,10 @@ public class Lexer extends LexerBase{
         {
             String[] words = s.split(" ");
             int i = 0;
-            while (!words[i].equalsIgnoreCase("from") && !words[2].equals("from"))
+            while (!"from".equalsIgnoreCase(words[i]) && !"from".equals(words[2]))
             {
                 i++;
-                if(words[i].equalsIgnoreCase("from"))
+                if("from".equalsIgnoreCase(words[i]))
                 {
                     break;
                 }
@@ -266,7 +266,7 @@ public class Lexer extends LexerBase{
                 {
                     try
                     {
-                        if(!words[i+1].equalsIgnoreCase("from"))
+                        if(!"from".equalsIgnoreCase(words[i+1]))
                         {
                             //System.out.println(s);
                             //System.out.println(words[i]);
