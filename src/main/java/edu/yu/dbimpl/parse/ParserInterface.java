@@ -45,7 +45,7 @@ public class ParserInterface extends ParserInterfaceBase {
         if(isBoolean())
         {
             String sVal = lexer.tokenizer.sval;
-            if(sVal.equalsIgnoreCase("true"))
+            if("true".equalsIgnoreCase(sVal))
             {
                 db = new Datum(true);
             }
@@ -237,7 +237,7 @@ public class ParserInterface extends ParserInterfaceBase {
 
     private boolean isSelectStatement()
     {
-        return (lexer.tokenizer.sval != null) && lexer.tokenizer.sval.equals("select");
+        return (lexer.tokenizer.sval != null) && "select".equals(lexer.tokenizer.sval);
     }
 
     private boolean isFrom()
@@ -252,7 +252,7 @@ public class ParserInterface extends ParserInterfaceBase {
 
     private boolean isWhere()
     {
-        return (lexer.tokenizer.sval != null) && lexer.tokenizer.sval.equals("where");
+        return (lexer.tokenizer.sval != null) && "where".equals(lexer.tokenizer.sval);
     }
 
     private List<String> handleSelect()
@@ -297,12 +297,12 @@ public class ParserInterface extends ParserInterfaceBase {
 
 
     private boolean isIntoStatement() {
-		return (lexer.tokenizer.sval != null) && lexer.tokenizer.sval.equals("into");
+		return (lexer.tokenizer.sval != null) && "into".equals(lexer.tokenizer.sval);
 	}
 
 	private boolean isInsertStatement()
     {
-		return (lexer.tokenizer.sval != null) && lexer.tokenizer.sval.equals("insert");
+		return (lexer.tokenizer.sval != null) && "insert".equals(lexer.tokenizer.sval);
 	}
 
 	private List<String> handleFrom()
@@ -341,7 +341,7 @@ public class ParserInterface extends ParserInterfaceBase {
 
     private boolean isValue() 
     {
-        return (lexer.tokenizer.sval != null) && lexer.tokenizer.sval.equals("values");
+        return (lexer.tokenizer.sval != null) && "values".equals(lexer.tokenizer.sval);
     }
 
     private void handleAVG()
